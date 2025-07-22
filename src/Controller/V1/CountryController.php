@@ -69,6 +69,10 @@ class CountryController extends AbstractController
     {
         $country = $this->countryRepository->byUUID($country);
 
+        if (!$country) {
+            throw $this->createNotFoundException('Country not found');
+        }
+
         return $this->json($this->getCountryData($country));
     }
 
@@ -198,7 +202,7 @@ class CountryController extends AbstractController
 
         $country = $this->countryRepository->byUUID($country);
         if (!$country) {
-            return $this->json(['error' => 'Country not found'], Response::HTTP_NOT_FOUND);
+            throw $this->createNotFoundException('Country not found');
         }
 
         $this->setCountryData($country, $parameters);
@@ -224,7 +228,7 @@ class CountryController extends AbstractController
         $country = $this->countryRepository->byUUID($country);
 
         if (!$country) {
-            return $this->json(['error' => 'Country not found'], Response::HTTP_NOT_FOUND);
+            throw $this->createNotFoundException('Country not found');
         }
 
         $this->countryRepository->delete($country);
