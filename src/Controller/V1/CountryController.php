@@ -46,6 +46,31 @@ class CountryController extends AbstractController
         ];
     }
 
+    private function setCountryData(Country $country, array $data): void
+    {
+        $country->setName($data['name'] ?? null);
+        $country->setRegion($data['region'] ?? null);
+        $country->setSubRegion($data['subRegion'] ?? null);
+        $country->setDemonym($data['demonym'] ?? null);
+        $country->setPopulation($data['population'] ?? 0);
+        $country->setIndependant($data['independant'] ?? false);
+        $country->setFlag($data['flag'] ?? null);
+        $currencyData = $data['currency'] ?? null;
+        if ($currencyData) {
+            $currency = $this->currencyRepository->getCurrencyByCode($currencyData['code'] ?? '');
+
+            if(!$currency) {
+                $currency = new Currency();
+                $currency->setCode($currencyData['code'] ?? null);
+                $currency->setName($currencyData['name'] ?? null);
+                $currency->setSymbol($currencyData['symbol'] ?? null);
+                $this->currencyRepository->save($currency);
+            }
+
+            $country->setCurrency($currency);
+        }
+    }
+
     /**
      * List All Countries.
      */
@@ -74,31 +99,6 @@ class CountryController extends AbstractController
         }
 
         return $this->json($this->getCountryData($country));
-    }
-
-    private function setCountryData(Country $country, array $data): void
-    {
-        $country->setName($data['name']);
-        $country->setRegion($data['region']);
-        $country->setSubRegion($data['subRegion']);
-        $country->setDemonym($data['demonym']);
-        $country->setPopulation($data['population']);
-        $country->setIndependant($data['independant']);
-        $country->setFlag($data['flag']);
-        $currencyData = $data['currency'] ?? null;
-        if ($currencyData) {
-            $currency = $this->currencyRepository->getCurrencyByCode($currencyData['code']);
-
-            if(!$currency) {
-                $currency = new Currency();
-                $currency->setCode($currencyData['code']);
-                $currency->setName($currencyData['name']);
-                $currency->setSymbol($currencyData['symbol']);
-                $this->currencyRepository->save($currency);
-            }
-
-            $country->setCurrency($currency);
-        }
     }
 
     private function hasErrors(Country $country) : array|false

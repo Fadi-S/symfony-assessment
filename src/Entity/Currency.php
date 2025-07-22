@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use App\Repository\CurrencyRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CurrencyRepository::class)]
+#[UniqueEntity(fields: ['code'], message: 'This currency code is already in use.')]
 class Currency
 {
     #[ORM\Id]
@@ -15,13 +17,15 @@ class Currency
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $symbol = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Assert\Unique]
+    #[Assert\NotBlank]
     private ?string $code = null;
 
     public function getId(): ?int
