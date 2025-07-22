@@ -17,6 +17,9 @@ class CountrySyncCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $url = "https://restcountries.com/v3.1/all?fields=name,region,subregion,demonyms,population,independent,flag,currencies";
+
+
         return COMMAND::SUCCESS;
     }
 }
