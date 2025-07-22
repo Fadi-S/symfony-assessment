@@ -16,28 +16,25 @@ class CurrencyRepository extends ServiceEntityRepository
         parent::__construct($registry, Currency::class);
     }
 
-    //    /**
-    //     * @return Currency[] Returns an array of Currency objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function getAllIndexedByCode(): array
+    {
+        return $this->createQueryBuilder('currency', 'currency.code')->getQuery()->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Currency
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function getCurrencyByCode($code) : ?Currency
+    {
+        return $this->findOneBy([
+            'code' => $code,
+        ]);
+    }
+
+    public function save(Currency $currency) : Currency
+    {
+        $entityManager = $this->getEntityManager();
+
+        $entityManager->persist($currency);
+        $entityManager->flush();
+
+        return $currency;
+    }
 }

@@ -5,10 +5,13 @@ namespace App\Entity;
 use App\Repository\CountryRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
+#[UniqueEntity(fields: ['uuid'], message: 'A country with this UUID already exists.')]
+#[UniqueEntity(fields: ['name'], message: 'A country with this name already exists.')]
 class Country
 {
 
@@ -18,12 +21,10 @@ class Country
     private int $id;
 
     #[ORM\Column(type: Types::GUID, unique: true)]
-    #[Assert\Unique]
     private ?string $uuid = null;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank]
-    #[Assert\Unique]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -40,9 +41,17 @@ class Country
 
     #[ORM\Column]
     #[Assert\NotBlank]
+    #[Assert\Type(type: 'integer')]
+    #[Assert\Range(
+        notInRangeMessage: 'The population must be a logical number.',
+        min: 1,
+        max: 2147483647
+    )]
     private ?int $population = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'boolean')]
     private ?bool $independant = null;
 
     #[ORM\Column(length: 255)]

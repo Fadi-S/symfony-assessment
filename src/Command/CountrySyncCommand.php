@@ -19,6 +19,7 @@ class CountrySyncCommand extends Command
     public function __construct(
         private readonly HttpClientInterface $client,
         private readonly EntityManagerInterface $entityManager,
+        private readonly CountryRepository $countryRepository,
         private readonly CurrencyRepository $currencyRepository,
     ) {
         parent::__construct();
@@ -35,44 +36,62 @@ class CountrySyncCommand extends Command
         $url = "https://restcountries.com/v3.1/all?fields=name,region,subregion,demonyms,population,independent,flag,currencies";
 
         $response = $this->client->request('GET', $url);
-
         $countriesResponse = $response->toArray();
-        $currencies = [];
+
+        $existingCountries = $this->countryRepository->getAllIndexedByName();
+        $existingCurrencies = $this->currencyRepository->getAllIndexedByCode();
+
+        $newCurrencies = [];
 
         foreach ($countriesResponse as $countryResponse) {
-            $currencyResponse = $countryResponse['currencies'];
-            $currencyKey = array_key_first($currencyResponse);
+            $countryName = $countryResponse['name']['common'];
+            $country = $existingCountries[$countryName] ?? null;
 
-            $currency = $currencies[$currencyKey] ?? null;
-            if(!$currency && $currencyKey) {
-                $currency = new Currency();
-                $currency->setName($currencyResponse[$currencyKey]["name"]);
-                $currency->setSymbol($currencyResponse[$currencyKey]["symbol"]);
-                $currency->setCode($currencyKey);
-                $this->entityManager->persist($currency);
-                $this->entityManager->flush();
-
-                $currencies[$currencyKey] = $currency;
+            if (!$country) {
+                $country = new Country();
+                $country->setUuid(Uuid::v1()->toString());
+                $country->setName($countryName);
+                $this->entityManager->persist($country);
+                $existingCountries[$countryName] = $country;
             }
 
-            $country = new Country();
-            $country->setName($countryResponse['name']['common']);
+            $country->setRegion($countryResponse['region'] ?? null);
+            $country->setSubregion($countryResponse['subregion'] ?? null);
+            $country->setPopulation($countryResponse['population'] ?? 0);
+            $country->setFlag($countryResponse['flag'] ?? null);
+            $country->setIndependant($countryResponse['independent'] ?? false);
+
+            $demonym = null;
+            if (isset($countryResponse['demonyms']['eng'])) {
+                $demonym = $countryResponse['demonyms']['eng']['f']
+                    ?? $countryResponse['demonyms']['eng']['m']
+                    ?? null;
+            }
+            $country->setDemonym($demonym ?? "null");
+
+            $currencyCode = array_key_first($countryResponse['currencies'] ?? []);
+            $currency = null;
+
+            if ($currencyCode) {
+                $currency = $existingCurrencies[$currencyCode] ?? $newCurrencies[$currencyCode] ?? null;
+
+                if (!$currency) {
+                    $currencyData = $countryResponse['currencies'][$currencyCode];
+                    $currency = new Currency();
+                    $currency->setCode($currencyCode);
+                    $currency->setName($currencyData['name'] ?? '');
+                    $currency->setSymbol($currencyData['symbol'] ?? null);
+
+                    $this->entityManager->persist($currency);
+                    $newCurrencies[$currencyCode] = $currency;
+                }
+            }
             $country->setCurrency($currency);
-            $country->setRegion($countryResponse['region']);
-            $country->setSubregion($countryResponse['subregion']);
-            $country->setPopulation($countryResponse['population']);
-            $country->setFlag($countryResponse['flag']);
-            $country->setIndependant($countryResponse['independent']);
-            $country->setDemonym($countryResponse['demonyms']['eng']['f'] ?? $countryResponse['demonyms']['eng']['m'] ?? "null");
-            $uuid = Uuid::v1();
-
-            $country->setUuid($uuid->toString());
-
-
-            $this->entityManager->persist($country);
-            $this->entityManager->flush();
         }
 
-        return COMMAND::SUCCESS;
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        return Command::SUCCESS;
     }
 }
