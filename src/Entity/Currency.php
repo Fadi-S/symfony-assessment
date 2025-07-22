@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CurrencyRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CurrencyRepository::class)]
 class Currency
@@ -18,6 +19,10 @@ class Currency
 
     #[ORM\Column(length: 255)]
     private ?string $symbol = null;
+
+    #[ORM\Column(length: 255, unique: true)]
+    #[Assert\Unique]
+    private ?string $code = null;
 
     public function getId(): ?int
     {
@@ -44,6 +49,18 @@ class Currency
     public function setSymbol(string $symbol): static
     {
         $this->symbol = $symbol;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): static
+    {
+        $this->code = $code;
 
         return $this;
     }

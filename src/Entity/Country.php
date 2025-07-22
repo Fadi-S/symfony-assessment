@@ -18,10 +18,12 @@ class Country
     private int $id;
 
     #[ORM\Column(type: Types::GUID, unique: true)]
+    #[Assert\Unique]
     private ?string $uuid = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank]
+    #[Assert\Unique]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -48,7 +50,7 @@ class Country
     private ?string $flag = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Currency $currency = null;
 
     /**

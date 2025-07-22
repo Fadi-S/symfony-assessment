@@ -9,18 +9,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('countries')]
 class CountryController extends AbstractController
 {
-    /**
-     * Hello, this is the controller for managing countries.
-     * @return void
-     */
-    #[Route('/{country}', methods: ['GET'])]
-    public function getCountry(): void
+    #[Route('/list', methods: ['GET'])]
+    public function getCountries(): void
     {
         // TODO
     }
 
-    #[Route('/list', methods: ['GET'])]
-    public function getCountries(): void
+    
+    #[Route('/{country}', methods: ['GET'])]
+    public function getCountry(): void
     {
         // TODO
     }
