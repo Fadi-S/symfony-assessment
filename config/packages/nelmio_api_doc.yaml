@@ -11,7 +11,7 @@ nelmio_api_doc:
                     scheme: bearer
                     bearerFormat: JWT
         security:
-            - Bearer: [ ]
+            - bearerAuth: []
     areas:
         path_patterns:
             - ^/api(?!/doc$)

@@ -51,4 +51,24 @@ class CountryRepository extends ServiceEntityRepository
             return false;
         }
     }
+
+    public function getAllCountryNames() : array
+    {
+        $countries = $this->createQueryBuilder('country')
+            ->select('country.name')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(fn($country) => $country['name'], $countries);
+    }
+
+    public function deleteByNames(array $names)
+    {
+        $qb = $this->createQueryBuilder('country');
+        $qb->delete()
+            ->where($qb->expr()->in('country.name', ':names'))
+            ->setParameter('names', $names);
+
+        return $qb->getQuery()->execute();
+    }
 }

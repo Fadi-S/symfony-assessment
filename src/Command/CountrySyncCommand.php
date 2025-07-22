@@ -40,12 +40,14 @@ class CountrySyncCommand extends Command
 
         $existingCountries = $this->countryRepository->getAllIndexedByName();
         $existingCurrencies = $this->currencyRepository->getAllIndexedByCode();
+        $apiCountryNames = [];
 
         $newCurrencies = [];
 
         foreach ($countriesResponse as $countryResponse) {
             $countryName = $countryResponse['name']['common'];
             $country = $existingCountries[$countryName] ?? null;
+            $apiCountryNames[] = $countryName;
 
             if (!$country) {
                 $country = new Country();
@@ -89,9 +91,20 @@ class CountrySyncCommand extends Command
             $country->setCurrency($currency);
         }
 
+        $this->deleteCountries($apiCountryNames);
+
         $this->entityManager->flush();
         $this->entityManager->clear();
 
         return Command::SUCCESS;
+    }
+
+    private function deleteCountries(array $apiCountryNames): void
+    {
+        $existingCountryNames = $this->countryRepository->getAllCountryNames();
+
+        if ($obsoleteNames = array_diff($existingCountryNames, $apiCountryNames)) {
+            $this->countryRepository->deleteByNames($obsoleteNames);
+        }
     }
 }
