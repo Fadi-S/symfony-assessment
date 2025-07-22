@@ -4,3 +4,6 @@ controllers:
         namespace: App\Controller\V1
     type: attribute
     prefix: /api/v1
+
+api_login_check:
+    path: /api/v1/auth/login
